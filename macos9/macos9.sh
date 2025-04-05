@@ -10,8 +10,6 @@
 # Author: Jaroslaw Mazurkiewicz  /  jaromaz
 # www: https://jm.iq.pl  e-mail: jm at iq.pl
 # --------------------------------------------------------
-# Mac OS 9 - SheepShaver auto-compile/install script
-# --------------------------------------------------------
 
 printf "\e[92m"; echo '
  __  __             ___  ____     ___  
@@ -19,9 +17,63 @@ printf "\e[92m"; echo '
 | |\/| |/ _` |/ __| | | \___ \  | (_) |
 | |  | | (_| | (__| |_| |___) |  \__, |
 |_|  |_|\__,_|\___|\___/|____/     /_/ 
-
 '; printf "\e[0m"; sleep 2
+
 source ../assets/func.sh
+
+#------------------------------------------------------------------------------
+# Override Build_SheepShaver to patch sysdeps.h for ANSI header issues.
+#------------------------------------------------------------------------------
+function Build_SheepShaver {
+    printf "\e[95m"; echo '
+ ____  _                    ____  _
+/ ___|| |__   ___  ___ _ __/ ___|| |__   __ ___   _____ _ __
+\___ \|  _ \ / _ \/ _ \  _ \___ \|  _ \ / _` \ \ / / _ \  __|
+ ___) | | | |  __/  __/ |_) |__) | | | | (_| |\ V /  __/ |
+|____/|_| |_|\___|\___| .__/____/|_| |_|\__,_| \_/ \___|_|
+                      |_|
+'; printf "\e[0m"; sleep 2
+
+    mkdir -p ${SRC_DIR} 2>/dev/null
+    cd ${SRC_DIR}
+    rm -rf macemu 2>/dev/null
+    git clone ${BASILISK_REPO}
+    cd ${SRC_DIR}/macemu
+    git checkout 33c3419
+    cd ${SRC_DIR}/macemu/SheepShaver
+
+    make links
+    cd src/Unix
+
+    # Patch sysdeps.h so that the ANSI header check also passes for C++
+    if [ -f sysdeps.h ]; then
+      sed -i 's/#ifndef __STDC__/#if !defined(__STDC__) \&\& !defined(__cplusplus)/' sysdeps.h
+    fi
+
+    NO_CONFIGURE=1 ./autogen.sh &&
+    ./configure --enable-sdl-audio \
+                --enable-sdl-video \
+                --enable-sdl-framework \
+                --without-gtk \
+                --without-mon \
+                --without-esd \
+                --enable-addressing=direct,0x10000000
+
+    make -j3
+    sudo make install
+
+    modprobe --show sheep_net 2>/dev/null || Build_NetDriver
+
+    echo "no-sighandler" | sudo tee /etc/directfbrc
+    grep -q mmap_min_addr /etc/sysctl.conf || \
+    echo "vm.mmap_min_addr = 0" | sudo tee -a /etc/sysctl.conf
+
+    rm -rf ${SRC_DIR}
+}
+
+#------------------------------------------------------------------------------
+# Continue with the normal macos9.sh process
+#------------------------------------------------------------------------------
 usercheck
 updateinfo
 MacOS_version 9
@@ -36,7 +88,7 @@ sudo apt install -y libdirectfb-dev automake gobjc libudev-dev xa65 build-essent
 
 [ $? -ne 0 ] && net_error "Mac OS 9 apt packages"
 
-# Mac OS 9 config
+# Mac OS 9 configuration
 echo "
 rom    ${MACOS_DIR}/newworld86.rom
 disk   ${MACOS_DIR}/hdd.dsk
@@ -61,7 +113,7 @@ screen win/800/600
 # screen win/640/480
 " > ${MACOS_CONFIG}
 
-# ROM & System
+# ROM & System setup
 cd ${MACOS_DIR}
 wget --no-check-certificate ${ROM}
 [ $? -ne 0 ] && net_error "Mac OS 9 ROM file"
@@ -71,10 +123,8 @@ wget -O ${MACOS_DIR}/hdd.dsk.gz ${HDD_IMAGE}
 echo "* Decompressing the hard drive image - please wait"
 gzip -d hdd.dsk.gz
 
-# SDL2 check && builder
+# SDL2 and SheepShaver build steps
 [ -f $SDL2_FILE ] || Build_SDL2
-
-# SheepShaver check && builder
 [ -f $SHEEPSHAVER_FILE ] || Build_SheepShaver
 
 echo "* Mac OS 9 installation complete"
