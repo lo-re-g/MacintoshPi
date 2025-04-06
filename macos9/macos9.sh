@@ -20,6 +20,8 @@ printf "\e[92m"; echo '
 '; printf "\e[0m"; sleep 2
 
 wget https://github.com/Korkman/macemu-appimage-builder/releases/download/continuous/SheepShaver-i386.AppImage
+chmod +x SheepShaver-i386.AppImage
+./SheepShaver-i386.AppImage --appimage-extract
 
 # Mac OS 9 configuration
 echo "
