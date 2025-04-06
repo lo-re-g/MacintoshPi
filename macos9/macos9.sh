@@ -19,10 +19,7 @@ printf "\e[92m"; echo '
 |_|  |_|\__,_|\___|\___/|____/     /_/ 
 '; printf "\e[0m"; sleep 2
 
-git clone https://github.com/cebix/macemu.git
-cd macemu/SheepShaver
-make -j4 # compila SheepShaver (potrebbe essere necessario un ./configure a seconda del branch)
-sudo make install # installa il binario in /usr/local/bin
+wget https://github.com/Korkman/macemu-appimage-builder/releases/download/continuous/SheepShaver-i386.AppImage
 
 # Mac OS 9 configuration
 echo "
