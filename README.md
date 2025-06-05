@@ -194,3 +194,12 @@ For more information (and hi-res photos) please visit my website: https://jm.iq.
 
 You can transfer any funds you wish to my *[PayPal account](https://www.paypal.com/paypalme/jaromaz)* if you want to support this project.
 
+### Running tests
+
+Tests require [Bats](https://bats-core.readthedocs.io). After installing it run:
+
+```
+bats tests
+```
+
+
