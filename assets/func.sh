@@ -5,7 +5,7 @@
 # This project allows running full-screen versions of
 # Apple's Mac OS 7, 8 and 9 with audio, active online
 # connection, and modem emulation under a CLI-only
-# Debian 32bit (i386) system.
+# Raspberry Pi OS (Legacy) 32-bit system.
 # --------------------------------------------------------
 # Author: Jaroslaw Mazurkiewicz  /  jaromaz
 # www: https://jm.iq.pl  e-mail: jm at iq.pl
